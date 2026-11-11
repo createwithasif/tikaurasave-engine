@@ -455,10 +455,19 @@ async def debug_formats(url: str):
     return {"count": len(out), "formats": out[:60]}
 
 
+async def pot_ok() -> bool:
+    """Is the bgutil PO Token server (started by the Dockerfile) answering?"""
+    try:
+        async with httpx.AsyncClient(timeout=2) as c:
+            return (await c.get("http://127.0.0.1:4416/ping")).status_code == 200
+    except Exception:
+        return False
+
+
 @app.get("/health")
 async def health():
     return {"ok": True, "yt_dlp": yt_dlp.version.__version__,
-            "ffmpeg": bool(shutil.which("ffmpeg")), "cookies": bool(cookies_file()), "node": bool(shutil.which("node"))}
+            "ffmpeg": bool(shutil.which("ffmpeg")), "cookies": bool(cookies_file()), "node": bool(shutil.which("node")), "pot": await pot_ok()}
 
 
 if __name__ == "__main__":
