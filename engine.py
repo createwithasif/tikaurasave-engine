@@ -121,8 +121,10 @@ async def yt_extract(url: str) -> dict:
         return hit
 
     def run():
+        # process=False: list every format YouTube returns without picking one,
+        # so a missing "best" format does not fail the whole request.
         with yt_dlp.YoutubeDL(ydl_opts()) as ydl:
-            return ydl.extract_info(url, download=False)
+            return ydl.sanitize_info(ydl.extract_info(url, download=False, process=False))
 
     try:
         info = await asyncio.to_thread(run)
@@ -441,6 +443,16 @@ async def tiktok_original_file(request: Request, url: str):
     except HTTPException:
         title = "TikTok"
     return await proxy_file(src, safe_name(f"{title} original", "mp4"), "video/mp4", request)
+
+
+@app.get("/debug-formats")
+async def debug_formats(url: str):
+    """Short summary of the formats YouTube returned (for troubleshooting)."""
+    info = await yt_extract(url)
+    out = []
+    for f in info.get("formats") or []:
+        out.append(f"{f.get('format_id')} {f.get('ext')} {f.get('height')} {f.get('vcodec')} {f.get('acodec')} {f.get('protocol')} url={'yes' if f.get('url') else 'no'}")
+    return {"count": len(out), "formats": out[:60]}
 
 
 @app.get("/health")
