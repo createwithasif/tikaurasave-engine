@@ -1,0 +1,4 @@
+fastapi==0.121.*
+uvicorn[standard]
+httpx
+yt-dlp[default]
