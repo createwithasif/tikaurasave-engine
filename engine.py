@@ -134,7 +134,7 @@ async def yt_extract(url: str) -> dict:
             raise HTTPException(404, "This video is private.")
         if "age" in msg.lower():
             raise HTTPException(403, "Age-restricted videos are not supported.")
-        raise HTTPException(500, "Could not read this YouTube video.")
+        raise HTTPException(500, "Could not read this YouTube video. " + (msg.splitlines() or [""])[0][-200:])
     cache_set(("yt", url), info)
     return info
 
