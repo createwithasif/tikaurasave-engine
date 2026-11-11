@@ -129,7 +129,7 @@ async def yt_extract(url: str) -> dict:
     except Exception as e:  # noqa: BLE001
         msg = str(e)
         if "Sign in" in msg or "bot" in msg.lower():
-            raise HTTPException(403, "YouTube blocked this request (bot check). Try again later.")
+            raise HTTPException(403, "YouTube blocked this request (bot check). " + msg.splitlines()[0][-160:])
         if "Private video" in msg:
             raise HTTPException(404, "This video is private.")
         if "age" in msg.lower():
@@ -446,7 +446,7 @@ async def tiktok_original_file(request: Request, url: str):
 @app.get("/health")
 async def health():
     return {"ok": True, "yt_dlp": yt_dlp.version.__version__,
-            "ffmpeg": bool(shutil.which("ffmpeg"))}
+            "ffmpeg": bool(shutil.which("ffmpeg")), "cookies": bool(cookies_file()), "node": bool(shutil.which("node"))}
 
 
 if __name__ == "__main__":
